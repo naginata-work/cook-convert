@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cooking Unit Converter / 料理の単位換算ツール</title>
+<meta name="description" content="カップ・大さじ・グラム・ml。海外レシピの単位を材料ごとに一発換算。">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4214020669195548"
+     crossorigin="anonymous"></script>
+<style>
+  :root {
+    --bg: #fbf6ee; --card: #ffffff; --text: #3a2e22; --sub: #8a7a68;
+    --accent: #d98c3d; --accent2: #7fa876; --border: #ecdfc9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: "Hiragino Kaku Gothic ProN", "Segoe UI", Arial, sans-serif;
+    background: var(--bg); color: var(--text); padding: 16px;
+  }
+  .wrap { max-width: 480px; margin: 0 auto; }
+  .top-row { display: flex; justify-content: flex-end; margin-bottom: 4px; }
+  .lang-btn { background: none; border: 1px solid var(--border); color: var(--sub); border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer; }
+  h1 { font-size: 21px; text-align: center; margin: 4px 0 4px; }
+  .lead { text-align: center; color: var(--sub); font-size: 13px; margin-bottom: 18px; line-height: 1.6; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+  label { display: block; font-size: 13px; color: var(--sub); margin-bottom: 4px; }
+  select, input[type="number"] {
+    width: 100%; padding: 10px; font-size: 15px; border: 1px solid var(--border);
+    border-radius: 8px; background: #fff; color: var(--text);
+  }
+  .field { margin-bottom: 12px; }
+  .row { display: flex; gap: 10px; }
+  .row > div { flex: 1; }
+  .result-list { list-style: none; padding: 0; margin: 4px 0 0; }
+  .result-list li { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 15px; }
+  .result-list li:last-child { border-bottom: none; }
+  .result-list .amount { font-weight: bold; color: var(--accent); }
+  .note { font-size: 11px; color: var(--sub); margin-top: 10px; line-height: 1.6; }
+  .footer-links { text-align: center; font-size: 12px; color: var(--sub); margin-top: 4px; line-height: 1.8; }
+  .footer-links a { color: var(--accent2); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top-row"><button class="lang-btn" id="langBtn">EN</button></div>
+  <h1 id="title">🥄 料理の単位換算ツール</h1>
+  <p class="lead" id="lead">海外レシピの「1カップ」「大さじ2」を、材料ごとにグラムへ即変換。</p>
+
+  <div class="card">
+    <div class="field">
+      <label id="ingredientLabel">材料</label>
+      <select id="ingredient"></select>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label id="amountLabel">量</label>
+        <input type="number" id="amount" value="1" step="any">
+      </div>
+      <div class="field">
+        <label id="unitLabel">単位</label>
+        <select id="fromUnit"></select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <ul class="result-list" id="resultList"></ul>
+    <p class="note" id="note"></p>
+  </div>
+
+  <p class="footer-links" id="footerLinks"></p>
+</div>
+
+<script>
+  const ML_PER_UNIT = { cup: 236.588, tbsp: 14.7868, tsp: 4.92892, ml: 1, floz: 29.5735 };
+  const G_PER_OZ = 28.3495;
+  const DENSITY_G_PER_CUP = {
+    volumeOnly: null,
+    water: 236.588, flour: 120, sugar: 200, brownSugar: 220,
+    butter: 227, rice: 185, honey: 340
+  };
+
+  const I18N = {
+    ja: {
+      title: '🥄 料理の単位換算ツール',
+      lead: '海外レシピの「1カップ」「大さじ2」を、材料ごとにグラムへ即変換。',
+      ingredientLabel: '材料',
+      amountLabel: '量',
+      unitLabel: '単位',
+      ingredients: {
+        volumeOnly: '体積のみ(液体・重さ換算なし)',
+        water: '水・牛乳など',
+        flour: '小麦粉',
+        sugar: '上白糖・グラニュー糖',
+        brownSugar: '三温糖・ブラウンシュガー',
+        butter: 'バター',
+        rice: '米(生)',
+        honey: 'はちみつ'
+      },
+      units: { cup: 'カップ', tbsp: '大さじ(tbsp)', tsp: '小さじ(tsp)', ml: 'ml', floz: '液量オンス(fl oz)', g: 'グラム(g)', oz: 'オンス(oz・重さ)' },
+      unitLabels: { cup: 'カップ', tbsp: '大さじ', tsp: '小さじ', ml: 'ml', floz: 'fl oz', g: 'g', oz: 'oz(重さ)' },
+      note: '※グラム換算は一般的な目安値です。材料のブランドや状態(すりきり/山盛り等)により多少前後します。',
+      noWeightNote: '※「体積のみ」を選択中はグラム換算を表示しません。材料を選ぶとグラムも表示されます。',
+      footerLinks: '他のツールも作っています → <a href="https://naginata-work.github.io/warikan-tool/" target="_blank" rel="noopener">割り勘計算機</a> / <a href="https://naginata-work.github.io/reaction-speed-tool/" target="_blank" rel="noopener">反応速度テスト</a> / <a href="https://naginata-work.github.io/fair-picker/" target="_blank" rel="noopener">公平くじ引き</a> / <a href="https://naginata-work.github.io/weekends-left/" target="_blank" rel="noopener">人生の残り週末</a>'
+    },
+    en: {
+      title: '🥄 Cooking Unit Converter',
+      lead: 'Convert "1 cup" or "2 tbsp" from a recipe into grams, per ingredient.',
+      ingredientLabel: 'Ingredient',
+      amountLabel: 'Amount',
+      unitLabel: 'Unit',
+      ingredients: {
+        volumeOnly: 'Volume only (liquids, no weight)',
+        water: 'Water / milk',
+        flour: 'All-purpose flour',
+        sugar: 'Granulated sugar',
+        brownSugar: 'Brown sugar (packed)',
+        butter: 'Butter',
+        rice: 'Rice (uncooked)',
+        honey: 'Honey'
+      },
+      units: { cup: 'cup', tbsp: 'tablespoon (tbsp)', tsp: 'teaspoon (tsp)', ml: 'ml', floz: 'fl oz', g: 'grams (g)', oz: 'ounces (oz, weight)' },
+      unitLabels: { cup: 'cup', tbsp: 'tbsp', tsp: 'tsp', ml: 'ml', floz: 'fl oz', g: 'g', oz: 'oz (wt)' },
+      note: '*Gram conversions are typical estimates. Actual weight can vary slightly by brand and how the ingredient is measured (packed vs. loose).',
+      noWeightNote: '*Weight conversion is hidden while "Volume only" is selected. Pick an ingredient to also see grams.',
+      footerLinks: 'Also made these → <a href="https://naginata-work.github.io/warikan-tool/" target="_blank" rel="noopener">Bill Splitter</a> / <a href="https://naginata-work.github.io/reaction-speed-tool/" target="_blank" rel="noopener">Reaction Speed Test</a> / <a href="https://naginata-work.github.io/fair-picker/" target="_blank" rel="noopener">Fair Picker</a> / <a href="https://naginata-work.github.io/weekends-left/" target="_blank" rel="noopener">Weekends Left</a>'
+    }
+  };
+
+  function loadLang() { try { return localStorage.getItem('cookConvertLang'); } catch (e) { return null; } }
+  function saveLang(l) { try { localStorage.setItem('cookConvertLang', l); } catch (e) {} }
+  let lang = loadLang() === 'en' ? 'en' : 'ja';
+  function t() { return I18N[lang]; }
+
+  const ingredientEl = document.getElementById('ingredient');
+  const fromUnitEl = document.getElementById('fromUnit');
+  const amountEl = document.getElementById('amount');
+
+  function populateSelects() {
+    const prevIngredient = ingredientEl.value || 'flour';
+    const prevUnit = fromUnitEl.value || 'cup';
+    ingredientEl.innerHTML = Object.keys(DENSITY_G_PER_CUP).map(key =>
+      `<option value="${key}">${t().ingredients[key]}</option>`).join('');
+    ingredientEl.value = prevIngredient;
+
+    const unitKeys = ['cup', 'tbsp', 'tsp', 'ml', 'floz', 'g', 'oz'];
+    fromUnitEl.innerHTML = unitKeys.map(key =>
+      `<option value="${key}">${t().units[key]}</option>`).join('');
+    fromUnitEl.value = prevUnit;
+  }
+
+  function convert() {
+    const ingredient = ingredientEl.value;
+    const fromUnit = fromUnitEl.value;
+    const amount = parseFloat(amountEl.value);
+    const resultList = document.getElementById('resultList');
+    resultList.innerHTML = '';
+
+    if (isNaN(amount)) return;
+
+    const densityGPerCup = DENSITY_G_PER_CUP[ingredient];
+    const densityGPerMl = densityGPerCup ? densityGPerCup / ML_PER_UNIT.cup : null;
+
+    let ml = null;
+    if (fromUnit in ML_PER_UNIT) {
+      ml = amount * ML_PER_UNIT[fromUnit];
+    } else {
+      const grams = fromUnit === 'g' ? amount : amount * G_PER_OZ;
+      if (densityGPerMl) ml = grams / densityGPerMl;
+    }
+
+    const rows = [];
+    if (ml !== null) {
+      rows.push(['cup', ml / ML_PER_UNIT.cup]);
+      rows.push(['tbsp', ml / ML_PER_UNIT.tbsp]);
+      rows.push(['tsp', ml / ML_PER_UNIT.tsp]);
+      rows.push(['ml', ml]);
+      rows.push(['floz', ml / ML_PER_UNIT.floz]);
+      if (densityGPerMl) {
+        const grams = ml * densityGPerMl;
+        rows.push(['g', grams]);
+        rows.push(['oz', grams / G_PER_OZ]);
+      }
+    } else {
+      const grams = fromUnit === 'g' ? amount : amount * G_PER_OZ;
+      rows.push(['g', grams]);
+      rows.push(['oz', grams / G_PER_OZ]);
+    }
+
+    rows.forEach(([unit, value]) => {
+      if (unit === fromUnit) return;
+      const li = document.createElement('li');
+      const rounded = value >= 100 ? Math.round(value) : Math.round(value * 10) / 10;
+      li.innerHTML = `<span>${t().unitLabels[unit]}</span><span class="amount">${rounded}</span>`;
+      resultList.appendChild(li);
+    });
+
+    document.getElementById('note').textContent = densityGPerCup ? t().note : t().noWeightNote;
+  }
+
+  ingredientEl.addEventListener('change', convert);
+  fromUnitEl.addEventListener('change', convert);
+  amountEl.addEventListener('input', convert);
+
+  function renderStaticText() {
+    document.getElementById('title').textContent = t().title;
+    document.getElementById('lead').textContent = t().lead;
+    document.getElementById('ingredientLabel').textContent = t().ingredientLabel;
+    document.getElementById('amountLabel').textContent = t().amountLabel;
+    document.getElementById('unitLabel').textContent = t().unitLabel;
+    document.getElementById('footerLinks').innerHTML = t().footerLinks;
+    populateSelects();
+    convert();
+  }
+
+  document.getElementById('langBtn').addEventListener('click', () => {
+    lang = lang === 'ja' ? 'en' : 'ja';
+    saveLang(lang);
+    document.getElementById('langBtn').textContent = lang === 'ja' ? 'EN' : 'JA';
+    renderStaticText();
+  });
+
+  document.getElementById('langBtn').textContent = lang === 'ja' ? 'EN' : 'JA';
+  ingredientEl.innerHTML = Object.keys(DENSITY_G_PER_CUP).map(key =>
+    `<option value="${key}" ${key === 'flour' ? 'selected' : ''}>${t().ingredients[key]}</option>`).join('');
+  renderStaticText();
+</script>
+</body>
+</html>
