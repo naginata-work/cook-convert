@@ -68,7 +68,17 @@
     <p class="note" id="note"></p>
   </div>
 
+  <div class="card" style="font-size:13px; line-height:1.9; color:var(--sub);">
+    <h2 id="aboutTitle" style="font-size:15px; color:var(--text); margin:0 0 8px;"></h2>
+    <p id="aboutBody1" style="margin:0 0 10px;"></p>
+    <p id="aboutBody2" style="margin:0;"></p>
+  </div>
+
   <p class="footer-links" id="footerLinks"></p>
+  <p style="text-align:center; font-size:11px; color:var(--sub); margin-top:4px;">
+    <a href="https://naginata-work.github.io/" style="color:var(--sub);" id="allToolsLink"></a> ・
+    <a href="https://naginata-work.github.io/privacy.html" style="color:var(--sub);" id="privacyLink"></a>
+  </p>
 </div>
 
 <script>
@@ -101,7 +111,12 @@
       unitLabels: { cup: 'カップ', tbsp: '大さじ', tsp: '小さじ', ml: 'ml', floz: 'fl oz', g: 'g', oz: 'oz(重さ)' },
       note: '※グラム換算は一般的な目安値です。材料のブランドや状態(すりきり/山盛り等)により多少前後します。',
       noWeightNote: '※「体積のみ」を選択中はグラム換算を表示しません。材料を選ぶとグラムも表示されます。',
-      footerLinks: '他のツールも作っています → <a href="https://naginata-work.github.io/warikan-tool/" target="_blank" rel="noopener">割り勘計算機</a> / <a href="https://naginata-work.github.io/reaction-speed-tool/" target="_blank" rel="noopener">反応速度テスト</a> / <a href="https://naginata-work.github.io/fair-picker/" target="_blank" rel="noopener">公平くじ引き</a>'
+      footerLinks: '他のツールも作っています → <a href="https://naginata-work.github.io/warikan-tool/" target="_blank" rel="noopener">割り勘計算機</a> / <a href="https://naginata-work.github.io/reaction-speed-tool/" target="_blank" rel="noopener">反応速度テスト</a> / <a href="https://naginata-work.github.io/fair-picker/" target="_blank" rel="noopener">公平くじ引き</a>',
+      aboutTitle: '単位換算について',
+      aboutBody1: '海外のレシピでは「1 cup」「2 tbsp」のようにカップ・大さじ・小さじといった体積の単位で分量が書かれていることが多く、日本の計量スプーン・計量カップやグラム表記に慣れていると戸惑いがちです。同じ「1カップ」でも、水と小麦粉、バターでは重さ(グラム数)が大きく異なるのは、材料ごとに密度が違うためです。',
+      aboutBody2: 'このツールでは、材料の種類を選んでから量と単位を入力すると、カップ・大さじ・小さじ・ml・グラム・オンスへ同時に換算して表示します。材料を選ばず「体積のみ」を選択すれば、水や油などの液体量をそのまま単位変換することもできます。グラム換算値は一般的な目安であり、材料の状態(すりきり・山盛りなど)によって多少前後する点にご注意ください。',
+      allToolsLink: '他のツール一覧',
+      privacyLink: 'プライバシーポリシー'
     },
     en: {
       title: '🥄 Cooking Unit Converter',
@@ -123,7 +138,12 @@
       unitLabels: { cup: 'cup', tbsp: 'tbsp', tsp: 'tsp', ml: 'ml', floz: 'fl oz', g: 'g', oz: 'oz (wt)' },
       note: '*Gram conversions are typical estimates. Actual weight can vary slightly by brand and how the ingredient is measured (packed vs. loose).',
       noWeightNote: '*Weight conversion is hidden while "Volume only" is selected. Pick an ingredient to also see grams.',
-      footerLinks: 'Also made these → <a href="https://naginata-work.github.io/warikan-tool/" target="_blank" rel="noopener">Bill Splitter</a> / <a href="https://naginata-work.github.io/reaction-speed-tool/" target="_blank" rel="noopener">Reaction Speed Test</a> / <a href="https://naginata-work.github.io/fair-picker/" target="_blank" rel="noopener">Fair Picker</a>'
+      footerLinks: 'Also made these → <a href="https://naginata-work.github.io/warikan-tool/" target="_blank" rel="noopener">Bill Splitter</a> / <a href="https://naginata-work.github.io/reaction-speed-tool/" target="_blank" rel="noopener">Reaction Speed Test</a> / <a href="https://naginata-work.github.io/fair-picker/" target="_blank" rel="noopener">Fair Picker</a>',
+      aboutTitle: 'About unit conversion',
+      aboutBody1: 'Recipes from the US and UK are often written in cups, tablespoons, and teaspoons rather than grams or milliliters, which can be confusing if you\'re used to metric kitchen scales. A "1 cup" of water and a "1 cup" of flour weigh very different amounts, because each ingredient has its own density.',
+      aboutBody2: 'Pick an ingredient, enter an amount and unit, and this tool instantly converts it to cups, tablespoons, teaspoons, ml, grams, and ounces at once. Choose "Volume only" if you just need to convert liquid measurements without weight. Gram values are typical estimates and can vary slightly depending on how an ingredient is packed or measured.',
+      allToolsLink: 'All tools',
+      privacyLink: 'Privacy policy'
     }
   };
 
@@ -209,6 +229,13 @@
     document.getElementById('amountLabel').textContent = t().amountLabel;
     document.getElementById('unitLabel').textContent = t().unitLabel;
     document.getElementById('footerLinks').innerHTML = t().footerLinks;
+    document.getElementById('aboutTitle').textContent = t().aboutTitle;
+    document.getElementById('aboutBody1').textContent = t().aboutBody1;
+    document.getElementById('aboutBody2').textContent = t().aboutBody2;
+    document.getElementById('allToolsLink').textContent = t().allToolsLink;
+    document.getElementById('allToolsLink').href = 'https://naginata-work.github.io/';
+    document.getElementById('privacyLink').textContent = t().privacyLink;
+    document.getElementById('privacyLink').href = 'https://naginata-work.github.io/privacy.html';
     populateSelects();
     convert();
   }
